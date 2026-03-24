@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 import joblib
 
+
 df = pd.read_csv("creditcard.csv")
 X = df.drop("Class", axis=1)
 y = df["Class"]
@@ -22,3 +23,15 @@ print(cm)
 joblib.dump(model, "fraud_model.pkl")
 
 print("Model saved successfully")
+
+import joblib
+from sklearn.ensemble import RandomForestClassifier
+X = [[100, 5000, 4900],
+     [200, 3000, 1000],
+     [50, 2000, 1950]]
+y = [0, 1, 0]  # 0 = Not Fraud, 1 = Fraud
+model = RandomForestClassifier()
+model.fit(X, y)
+joblib.dump(model, "model.pkl")
+
+print("Model saved successfully!")
