@@ -59,7 +59,7 @@ if st.button("Generate Live Transactions"):
             st.success(f"Transaction {i+1}: SAFE")
 st.subheader("Fraud Distribution")
 
-data = pd.read_csv("creditcard.csv")
+data = pd.read_csv("https://raw.githubusercontent.com/your-link/creditcard.csv")
 
 fig, ax = plt.subplots()
 sns.countplot(x="Class", data=data)
