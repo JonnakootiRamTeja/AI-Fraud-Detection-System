@@ -3,7 +3,6 @@ import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 st.set_page_config(page_title="Bank Fraud System", layout="wide")
 def login():
@@ -62,7 +61,6 @@ st.subheader("Fraud Distribution")
 
 
 fig, ax = plt.subplots()
-sns.countplot(x="Class", data=data)
 st.pyplot(fig)
 st.subheader("Model Performance")
 
@@ -74,5 +72,18 @@ y_pred = [0,1,0,0,0]
 cm = confusion_matrix(y_true, y_pred)
 
 fig2, ax2 = plt.subplots()
-sns.heatmap(cm, annot=True, fmt='d', ax=ax2)
 st.pyplot(fig2)
+
+import numpy as np
+
+st.subheader("Fraud Distribution (Demo)")
+
+fraud = np.random.randint(50, 100)
+non_fraud = np.random.randint(900, 1000)
+
+chart_data = pd.DataFrame({
+    "Type": ["Fraud", "Non-Fraud"],
+    "Count": [fraud, non_fraud]
+})
+
+st.bar_chart(chart_data.set_index("Type"))
