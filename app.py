@@ -3,18 +3,31 @@ import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import time
+import random
 
 st.set_page_config(page_title="Bank Fraud System", layout="wide")
 def login():
     st.title("Bank Login")
+
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
-        if username == "admin" and password == "1234":
-            st.session_state["logged_in"] = True
+    if st.button("Send OTP"):
+        if username == "ramteja" and password == "1918":
+            otp = random.randint(1000, 9999)
+            st.session_state["otp"] = otp
+            st.success(f"OTP Sent: {otp}")
         else:
             st.error("Invalid Username or Password")
+
+    otp_input = st.text_input("Enter OTP")
+
+    if st.button("Login"):
+        if otp_input and int(otp_input) == st.session_state.get("otp", 0):
+            st.session_state["logged_in"] = True
+        else:
+            st.error("Invalid OTP")
 
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
@@ -22,68 +35,80 @@ if "logged_in" not in st.session_state:
 if not st.session_state["logged_in"]:
     login()
     st.stop()
-
 model = joblib.load("fraud_model.pkl")
-st.title(" AI Banking Fraud Detection Dashboard")
 
+st.title("AI Banking Fraud Detection Dashboard")
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Transactions", "284,807")
 col2.metric("Fraud Cases", "492")
 col3.metric("Fraud Rate", "0.17%")
-st.subheader("Check Transaction")
 
-features = []
-for i in range(30):
-    value = st.number_input(f"Feature {i}", value=0.0)
-    features.append(value)
-features = np.array(features).reshape(1, -1)
+if "history" not in st.session_state:
+    st.session_state["history"] = []
+
+st.subheader("Enter Transaction")
+
+amount = st.number_input("Transaction Amount", min_value=0.0)
+time_val = st.number_input("Transaction Time", min_value=0.0)
+
+features = np.zeros(30)
+features[0] = amount
+features[1] = time_val
+features = features.reshape(1, -1)
+
 if st.button("Check Transaction"):
     prediction = model.predict(features)
     probability = model.predict_proba(features)
-    if prediction[0] == 1:
-        st.error(f" Fraud Detected (Probability: {probability[0][1]:.2f})")
+
+    result = "Fraud" if prediction[0] == 1 else "Safe"
+
+    if result == "Fraud":
+        st.error(f"Fraud Detected (Prob: {probability[0][1]:.2f})")
     else:
-        st.success(f"Safe Transaction (Probability: {probability[0][1]:.2f})")
+        st.success(f"Safe Transaction (Prob: {probability[0][1]:.2f})")
+
+    st.session_state["history"].append({
+        "Amount": amount,
+        "Time": time_val,
+        "Result": result,
+        "Probability": round(probability[0][1], 2)
+    })
+
 st.subheader("Live Transactions")
-
-if st.button("Generate Live Transactions"):
-    data = np.random.rand(5, 30)
-    df = pd.DataFrame(data, columns=[f"Feature {i}" for i in range(30)])
-    st.write(df)
-    preds = model.predict(data)
-    for i, p in enumerate(preds):
-        if p == 1:
-            st.error(f"Transaction {i+1}: FRAUD")
+if st.button("Start Live Simulation"):
+    for i in range(5):
+        amt = random.randint(100, 10000)
+        t = random.randint(1, 100000)
+        data = np.zeros((1, 30))
+        data[0][0] = amt
+        data[0][1] = t
+        pred = model.predict(data)
+        prob = model.predict_proba(data)
+        result = "FRAUD" if pred[0] == 1 else "SAFE"
+        if result == "FRAUD":
+            st.error(f"₹{amt} → FRAUD ({prob[0][1]:.2f})")
         else:
-            st.success(f"Transaction {i+1}: SAFE")
-st.subheader("Fraud Distribution")
+            st.success(f"₹{amt} → SAFE ({prob[0][1]:.2f})")
+        time.sleep(1)
 
+st.subheader("Transaction History")
 
+if st.session_state["history"]:
+    df = pd.DataFrame(st.session_state["history"])
+    st.dataframe(df)
 
-fig, ax = plt.subplots()
-st.pyplot(fig)
-st.subheader("Model Performance")
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Report",
+        data=csv,
+        file_name="fraud_report.csv",
+        mime="text/csv"
+    )
 
-from sklearn.metrics import confusion_matrix
-
-y_true = [0,1,0,1,0]
-y_pred = [0,1,0,0,0]
-
-cm = confusion_matrix(y_true, y_pred)
-
-fig2, ax2 = plt.subplots()
-st.pyplot(fig2)
-
-import numpy as np
-
-st.subheader("Fraud Distribution (Demo)")
-
-fraud = np.random.randint(50, 100)
-non_fraud = np.random.randint(900, 1000)
-
-chart_data = pd.DataFrame({
-    "Type": ["Fraud", "Non-Fraud"],
-    "Count": [fraud, non_fraud]
-})
-
-st.bar_chart(chart_data.set_index("Type"))
+st.subheader("Fraud vs Safe")
+if st.session_state["history"]:
+    df = pd.DataFrame(st.session_state["history"])
+    counts = df["Result"].value_counts()
+    fig, ax = plt.subplots()
+    counts.plot(kind='bar', ax=ax)
+    st.pyplot(fig)
