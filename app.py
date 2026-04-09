@@ -132,6 +132,9 @@ if check:
         feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
 
         try:
+            feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
+
+        try:
             if isinstance(shap_values, list):
                 if len(shap_values) > 1:
                     values = shap_values[1][0]
@@ -139,13 +142,10 @@ if check:
                     values = shap_values[0]
             else:
                 values = shap_values[0]
+                values = np.array(values).flatten()
         except:
-            values = shap_values[0]
-
-        shap_df = pd.DataFrame({
-            "Feature": feature_names,
-            "Impact": values
-        })
+            values = np.zeros(len(feature_names))
+            shap_df = pd.DataFrame({"Feature": feature_names,"Impact": values})
 
         shap_df = shap_df.sort_values(by="Impact", key=abs, ascending=False)
 
