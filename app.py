@@ -142,9 +142,9 @@ if check:
                     values = shap_values[0]
             else:
                 values = shap_values[0]
-                values = np.array(values).flatten()
-        except:
-            values = np.zeros(len(feature_names))
+            values = np.array(values).flatten()
+        except Exception e:
+            values=np.zeros(len(feature_names))
             shap_df = pd.DataFrame({"Feature": feature_names,"Impact": values})
 
         shap_df = shap_df.sort_values(by="Impact", key=abs, ascending=False)
