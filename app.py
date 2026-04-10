@@ -128,29 +128,32 @@ if check:
     })
 
         st.subheader("Fraud Explanation")
+feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
 
-        feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
+try:
+    if isinstance(shap_values, list):
+        if len(shap_values) > 1:
+            values = shap_values[1][0]
+        else:
+            values = shap_values[0]
+    else:
+        values = shap_values[0]
 
-        try:
-            feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
+    values = np.array(values).flatten()
 
-        try:
-            if isinstance(shap_values, list):
-                if len(shap_values) > 1:
-                    values = shap_values[1][0]
-                else:
-                    values = shap_values[0]
-            else:
-                values = shap_values[0]
-            values = np.array(values).flatten()
-        except Exception e:
-            values=np.zeros(len(feature_names))
-            shap_df = pd.DataFrame({"Feature": feature_names,"Impact": values})
+except Exception as e:
+    values = np.zeros(len(feature_names))
 
-        shap_df = shap_df.sort_values(by="Impact", key=abs, ascending=False)
+if len(values) != len(feature_names):
+    values = np.resize(values, len(feature_names))
 
-        st.write("Top Reasons:")
-        st.dataframe(shap_df.head(5))
+shap_df = pd.DataFrame({
+    "Feature": feature_names,
+    "Impact": values
+})
+shap_df = shap_df.sort_values(by="Impact", key=abs, ascending=False)
+st.write("Top Reasons:")
+st.dataframe(shap_df.head(5))
 
 st.subheader("Live Transactions")
 
