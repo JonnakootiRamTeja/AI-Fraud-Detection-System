@@ -1,49 +1,35 @@
-# AI Powered Fraud Detection System
+# AI Banking Fraud Detection System
+
+## Live App
+👉 https://jonnakootiramteja-ai-fraud-detection-system.streamlit.app
 
 ## Project Overview
-This project detects fraudulent credit card transactions using Machine Learning.  
-The model analyzes transaction features and predicts whether a transaction is **Fraud** or **Normal**.
+This project is an AI-powered banking fraud detection system that identifies fraudulent transactions in real time.
+
+It includes:
+- Secure login with OTP email authentication
+- Machine Learning-based fraud detection
+- Explainable AI using SHAP
+- Live transaction simulation
+- Downloadable fraud reports
 
 ## Features
-- Machine Learning fraud detection
-- Random Forest classification model
-- Real-time prediction dashboard
-- Data visualization
+✅ Fraud detection using trained ML model  
+✅ OTP-based secure login system  
+✅ Real-time transaction prediction  
+✅ SHAP-based fraud explanation  
+✅ Live transaction simulation  
+✅ Transaction history + CSV download  
 
-## Technologies Used
+## Tech Stack
 - Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
 - Streamlit
+- Pandas, NumPy
+- Scikit-learn
+- SHAP
+- SMTP (Email OTP)
 
-## Project Structure
-Fraud-Detection-System
-│
-├── app.py
-├── model.py
-├── train_model.py
-├── predict.py
-├── fraud_model.pkl
-├── requirements.txt
-└── README.md
 
-## 📊 Dataset
-The dataset used is the **Credit Card Fraud Detection Dataset**.
-
-Download dataset here:
-https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
-
-## How to Run the Project
-
-Install requirements:
-
-pip install -r requirements.txt
-
-Run the app:
-
-streamlit run app.py
 
 ## Project Screenshot
 ![Fraud Detection Dashboard](screenshot.png)

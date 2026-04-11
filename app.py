@@ -8,7 +8,43 @@ import random
 import shap
 import smtplib
 import os
+import sqlite3
+import hashlib
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+def add_user(username, email, password):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+
+    password = hash_password(password)
+
+    try:
+        c.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+                  (username, email, password))
+        conn.commit()
+        return True
+    except:
+        return False
+    finally:
+        conn.close()
+def check_user(email, password):
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+
+    password = hash_password(password)
+
+    c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+    user = c.fetchone()
+
+    conn.close()
+    return user
 from email.mime.text import MIMEText
+from dotenv import load_dotenv
+load_dotenv()
+st.write("EMAIL:", os.getenv("EMAIL"))
+st.write("PASS:", os.getenv("PASSWORD"))
+
 def get_transaction():
     return {
         "amount": random.randint(100, 20000),
@@ -17,9 +53,8 @@ def get_transaction():
 
 st.set_page_config(page_title="Bank Fraud System", layout="wide")
 def send_otp_email(receiver_email, otp):
-    sender_email = "ramtejajonnakooti123@gmail.com"
-    sender_password ="kqihoygdommhunlf"
-
+    sender_email = os.getenv("EMAIL")
+    sender_password = os.getenv("PASSWORD")
 
     msg = MIMEText(f"Your OTP is: {otp}")
     msg['Subject'] = "Bank Login OTP"
@@ -27,41 +62,60 @@ def send_otp_email(receiver_email, otp):
     msg['To'] = receiver_email
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
     server.starttls()
+    server.ehlo()
     server.login(sender_email, sender_password)
     server.send_message(msg)
     server.quit()
+
 def login():
-    st.title("Bank Login")
+    menu = st.selectbox("Select Option", ["Login", "Sign Up"])
 
-    username = st.text_input("Username")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
+    if menu == "Sign Up":
+        st.subheader("Create Account")
 
-    if st.button("Send OTP"):
-        if not email:
-            st.error("Enter email first")
-        elif username == "ramteja" and password == "1918":
-            otp = random.randint(1000, 9999)
-            st.session_state["otp"] = otp
-            send_otp_email(email, otp)
-            st.success("OTP sent to your email")
-        else:
-            st.error("Invalid Username or Password")
+        username = st.text_input("Username")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
-    otp_input = st.text_input("Enter OTP")
+        if st.button("Sign Up"):
+            if add_user(username, email, password):
+                st.success("Account created successfully")
+            else:
+                st.error("Email already exists")
 
-    if st.button("Login"):
-        if otp_input and int(otp_input) == st.session_state.get("otp", 0):
-            st.session_state["logged_in"] = True
-        else:
-            st.error("Invalid OTP")
+    elif menu == "Login":
+        st.subheader("Login")
+
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            user = check_user(email, password)
+
+            if user:
+                otp = random.randint(1000, 9999)
+                st.session_state["otp"] = otp
+                st.session_state["email"] = email
+                send_otp_email(email, otp)
+                st.success("OTP sent")
+            else:
+                st.error("Invalid credentials")
+        otp_input = st.text_input("Enter OTP")
+
+        if st.button("Verify OTP"):
+            if otp_input and int(otp_input) == st.session_state.get("otp", 0):
+                st.session_state["logged_in"] = True
+                st.success("Login Successful")
+            else:
+                st.error("Invalid OTP")
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
-
 if not st.session_state["logged_in"]:
     login()
     st.stop()
+
 model = joblib.load("fraud_model.pkl")
 scaler = joblib.load("scaler.pkl")
 explainer = shap.TreeExplainer(model)
@@ -115,19 +169,21 @@ if check:
     shap_values = explainer.shap_values(data_scaled)
 
     result = "Fraud" if prediction[0] == 1 else "Safe"
-
     if result == "Fraud":
         st.error(f"Fraud Detected (Prob: {probability[0][1]:.2f})")
     else:
         st.success(f"Safe Transaction (Prob: {probability[0][1]:.2f})")
         st.session_state["history"].append({
-        "Amount": amount,
-        "Time": time_val,
-        "Result": result,
-        "Probability": round(probability[0][1], 2)
-    })
+            "Amount": amount,
+            "Time": time_val,
+            "Result": result,
+            "Probability": round(probability[0][1], 2)
+        })
 
-        st.subheader("Fraud Explanation")
+    shap_values = explainer.shap_values(data_scaled)
+
+st.subheader("Fraud Explanation")
+
 feature_names = ['Time'] + [f'V{i}' for i in range(1,29)] + ['Amount']
 
 try:
@@ -141,7 +197,7 @@ try:
 
     values = np.array(values).flatten()
 
-except Exception as e:
+except:
     values = np.zeros(len(feature_names))
 
 if len(values) != len(feature_names):
@@ -151,7 +207,9 @@ shap_df = pd.DataFrame({
     "Feature": feature_names,
     "Impact": values
 })
+
 shap_df = shap_df.sort_values(by="Impact", key=abs, ascending=False)
+
 st.write("Top Reasons:")
 st.dataframe(shap_df.head(5))
 
