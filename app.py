@@ -33,12 +33,11 @@ def add_user(username, email, password):
 def check_user(email, password):
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
-
-    password = hash_password(password)
-
-    c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
-    user = c.fetchone()
-
+    try:
+        c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+        user = c.fetchone()
+    except:
+        user = None
     conn.close()
     return user
 from email.mime.text import MIMEText
