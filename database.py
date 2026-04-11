@@ -1,6 +1,6 @@
 import sqlite3
 
-def create_db():
+def create_table():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
 
@@ -8,12 +8,10 @@ def create_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT,
-            email TEXT UNIQUE,
+            email TEXT,
             password TEXT
         )
-              """)
+    """)
 
     conn.commit()
     conn.close()
-
-create_db()

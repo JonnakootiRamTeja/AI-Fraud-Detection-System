@@ -10,6 +10,8 @@ import smtplib
 import os
 import sqlite3
 import hashlib
+from database import create_table
+create_table()
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
