@@ -29,7 +29,17 @@ It includes:
 - SHAP
 - SMTP (Email OTP)
 
+Download dataset here:
+https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 
+## How to Run the Project
+
+Install requirements:
+
+pip install -r requirements.txt
+
+Run the app:
+streamlit run app.py
 
 ## Project Screenshot
 ![Fraud Detection Dashboard](screenshot.png)
