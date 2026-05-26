@@ -124,7 +124,7 @@ def login():
                 st.session_state["otp"] = otp
                 st.session_state["email"] = email
                 st.session_state["otp_sent"] = True
-                send_email_otp(email, otp)
+                st.success(f"OTP: {otp}")
                 st.success("OTP sent to your email 📩")
             else:
                 st.error("Invalid credentials ❌")
@@ -174,6 +174,17 @@ def dashboard():
 
     receiver = st.text_input("Receiver Email")
     amount = st.number_input("Amount", min_value=1)
+    st.markdown("""
+<style>
+.card {
+    background: linear-gradient(135deg,#1f1f1f,#2c2c2c);
+    padding:20px;
+    border-radius:15px;
+    color:white;
+    margin-bottom:10px;
+}
+</style>
+""", unsafe_allow_html=True)
 
     # ✅ FIXED SEND MONEY (NO ERRORS)
     if st.button("Send Money"):
