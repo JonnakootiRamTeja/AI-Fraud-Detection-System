@@ -50,14 +50,14 @@ conn.commit()
 # ---------------- FUNCTIONS ----------------
 import yagmail
 
+import streamlit as st
+import yagmail
+
 def send_email_otp(receiver_email, otp):
-    sender_email = "ramtejajonnakooti123@gmail.com"
-    app_password = "zsxafysixafflakm"
-
-    sender_email = os.getenv("EMAIL_USER")
-    app_password = os.getenv("EMAIL_PASS")
-
-    yag = yagmail.SMTP(sender_email, app_password)
+    yag = yagmail.SMTP(
+        user=st.secrets["EMAIL"],
+        password=st.secrets["APP_PASSWORD"]
+    )
 
     yag.send(
         to=receiver_email,
