@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import random
 import yagmail
+import os
 
 st.markdown("""
 <style>
@@ -50,8 +51,11 @@ conn.commit()
 import yagmail
 
 def send_email_otp(receiver_email, otp):
-    sender_email = "yourgmail@gmail.com"
-    app_password = "your_app_password"
+    sender_email = "ramtejajonnakooti123@gmail.com"
+    app_password = "zsxafysixafflakm"
+
+    sender_email = os.getenv("EMAIL_USER")
+    app_password = os.getenv("EMAIL_PASS")
 
     yag = yagmail.SMTP(sender_email, app_password)
 
